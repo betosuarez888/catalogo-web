@@ -1,0 +1,130 @@
+/* ====== BASE GENERAL ====== */
+
+body {
+    background: linear-gradient(180deg, #dce0ea 0%, #b0b9cc 100%);
+    min-height: 100vh;
+}
+
+/* ====== CONTENEDORES ====== */
+
+.page-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.card-profesional {
+    background-color: #ebeff7;
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* ====== FORMULARIOS ====== */
+
+.form-control {
+    border-radius: 8px;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #0d6efd;
+}
+
+/* ====== BOTONES ====== */
+
+.btn {
+    border-radius: 8px;
+    transition: 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+}
+
+.btn-outline-secondary:hover {
+    transform: translateY(-1px);
+}
+
+/* ====== TOPBAR ADMIN ====== */
+.admin-topbar {
+
+    width: 100%;
+    padding: 12px 15px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+/* estilo base */
+
+.btn-admin {
+
+    padding: 8px 14px;
+    font-size: 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.15s ease;
+
+}
+
+/* cambiar contraseña */
+
+.btn-password {
+
+    background-color: #e9ecef;
+    color: #495057;
+
+}
+
+.btn-password:hover {
+
+    background-color: #dde2e6;
+
+}
+
+.btn-password:active {
+
+    transform: scale(0.96);
+
+}
+
+/* cerrar sesión */
+
+.btn-logout {
+
+    background-color: #e9ecef;
+    color: #495057;
+
+}
+
+.btn-logout:hover {
+
+    background-color: #bb2d3b;
+
+}
+
+.btn-logout:active {
+
+    transform: scale(0.96);
+
+}
+
+
+/* ====== RESPONSIVE ====== */
+
+@media (max-width: 576px) {
+
+    .btn-admin {
+
+        padding: 10px 12px;
+        font-size: 15px;
+
+    }
+
+}
