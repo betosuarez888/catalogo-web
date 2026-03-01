@@ -14,7 +14,8 @@ app = Flask(__name__)
 
 NUMERO_WHATSAPP = "543794256156"  # tu número con código país sin +
 app.permanent_session_lifetime = timedelta(hours=2)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///catalogo.db"
+#app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///catalogo.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:m1a2s3@localhost/catalogo"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 UPLOAD_FOLDER = "static/productos"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -241,7 +242,20 @@ def formato_pesos(valor):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-       
+        
+            # crear admin si no existe
+        if not User.query.filter_by(username="admin").first():
+
+            admin = User(
+                username="admin",
+                password_hash=generate_password_hash("1234")
+            )
+
+            db.session.add(admin)
+            db.session.commit()
+
+            print("Admin creado correctamente")
+        
         # Crear contador si no existe
         if not Visita.query.first():
             nueva_visita = Visita(total=0)
