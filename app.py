@@ -15,7 +15,13 @@ app = Flask(__name__)
 NUMERO_WHATSAPP = "543794256156"  # tu número con código país sin +
 app.permanent_session_lifetime = timedelta(hours=2)
 #app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///catalogo.db"
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:m1a2s3@localhost/catalogo"
+#app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:m1a2s3@localhost/catalogo"
+database_url = os.environ.get("DATABASE_URL")
+
+if database_url:
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+else:
+    app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:m1a2s3@localhost/catalogo"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 UPLOAD_FOLDER = "static/productos"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
