@@ -254,25 +254,31 @@ def formato_pesos(valor):
 
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-        
-            # crear admin si no existe
-        if not User.query.filter_by(username="admin").first():
+   with app.app_context():
 
-            admin = User(
-                username="admin",
-                password_hash=generate_password_hash("1234")
-            )
+    # crear admin si no existe
+    if not User.query.filter_by(username="admin").first():
 
-            db.session.add(admin)
-            db.session.commit()
+        admin = User(
+            username="admin",
+            password_hash=generate_password_hash("1234")
+        )
 
-            print("Admin creado correctamente")
-        
-        # Crear contador si no existe
-        if not Visita.query.first():
-            nueva_visita = Visita(total=0)
-            db.session.add(nueva_visita)
-            db.session.commit()
-    app.run(debug=False)
+        db.session.add(admin)
+        db.session.commit()
+
+        print("Admin creado correctamente")
+
+
+    # crear contador si no existe
+    if not Visita.query.first():
+
+        nueva_visita = Visita(total=0)
+
+        db.session.add(nueva_visita)
+        db.session.commit()
+
+
+# SOLO para ejecutar localmente
+if __name__ == "__main__":
+    app.run(debug=True)
