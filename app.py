@@ -11,28 +11,29 @@ from datetime import timedelta
 
 app = Flask(__name__)
 
-
-NUMERO_WHATSAPP = "543794256156"  # tu número con código país sin +
+NUMERO_WHATSAPP = "543794256156"
 app.permanent_session_lifetime = timedelta(hours=2)
-#app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///catalogo.db"
-#app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:m1a2s3@localhost/catalogo"
+
 database_url = os.environ.get("DATABASE_URL")
 
 if database_url:
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 else:
     app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:m1a2s3@localhost/catalogo"
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 UPLOAD_FOLDER = "static/productos"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
 app.secret_key = os.environ.get("SECRET_KEY", "clave_temporal_dev")
+
 ADMIN_PASSWORD_HASH = "scrypt:32768:8:1$rsRqfE2GkJUoSdqj$6c42a633c7a298cb11e67351086801c55b3d33a4648c673528640f09bb5fe543ba785db9be2b6dd56ab10c164a5ce44276aebf1e15dcf5316c32ed5bd9f86c86"
 
 db = SQLAlchemy(app)
-with app.app_context():
-    db.create_all()
 
 
+# DEFINIR MODELOS PRIMERO
 class Producto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
@@ -50,6 +51,13 @@ class User(db.Model):
 class Visita(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     total = db.Column(db.Integer, default=0)
+
+
+# CREAR TABLAS AL FINAL
+with app.app_context():
+    print("Creando tablas...")
+    db.create_all()
+    print("Tablas creadas correctamente.")
 
 
 @app.route("/")
