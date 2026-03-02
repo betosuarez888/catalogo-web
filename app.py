@@ -256,18 +256,25 @@ def formato_pesos(valor):
 if __name__ == "__main__":
    with app.app_context():
 
-    # crear admin si no existe
-    if not User.query.filter_by(username="admin").first():
+    # eliminar admin existente (temporal)
+    admin_existente = User.query.filter_by(username="admin").first()
 
-        admin = User(
-            username="admin",
-            password_hash=generate_password_hash("1234")
-        )
-
-        db.session.add(admin)
+    if admin_existente:
+        db.session.delete(admin_existente)
         db.session.commit()
+        print("Admin anterior eliminado")
 
-        print("Admin creado correctamente")
+
+    # crear nuevo admin
+    admin = User(
+        username="admin",
+        password_hash=generate_password_hash("12345")
+    )
+
+    db.session.add(admin)
+    db.session.commit()
+
+    print("Admin creado correctamente en Render")
 
 
     # crear contador si no existe
