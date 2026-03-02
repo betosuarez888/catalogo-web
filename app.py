@@ -53,12 +53,36 @@ class Visita(db.Model):
     total = db.Column(db.Integer, default=0)
 
 
-# CREAR TABLAS AL FINAL
 with app.app_context():
+
     print("Creando tablas...")
     db.create_all()
     print("Tablas creadas correctamente.")
 
+
+    # crear admin si no existe
+    if not User.query.filter_by(username="admin").first():
+
+        admin = User(
+            username="admin",
+            password_hash=generate_password_hash("12345")
+        )
+
+        db.session.add(admin)
+        db.session.commit()
+
+        print("Admin creado correctamente")
+
+
+    # crear contador si no existe
+    if not Visita.query.first():
+
+        nueva_visita = Visita(total=0)
+
+        db.session.add(nueva_visita)
+        db.session.commit()
+
+        print("Contador creado correctamente")
 
 @app.route("/")
 def index():
@@ -253,38 +277,8 @@ def formato_pesos(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-if __name__ == "__main__":
-   with app.app_context():
 
-    # eliminar admin existente (temporal)
-    admin_existente = User.query.filter_by(username="admin").first()
-
-    if admin_existente:
-        db.session.delete(admin_existente)
-        db.session.commit()
-        print("Admin anterior eliminado")
-
-
-    # crear nuevo admin
-    admin = User(
-        username="admin",
-        password_hash=generate_password_hash("12345")
-    )
-
-    db.session.add(admin)
-    db.session.commit()
-
-    print("Admin creado correctamente en Render")
-
-
-    # crear contador si no existe
-    if not Visita.query.first():
-
-        nueva_visita = Visita(total=0)
-
-        db.session.add(nueva_visita)
-        db.session.commit()
-
+   
 
 # SOLO para ejecutar localmente
 if __name__ == "__main__":
