@@ -7,12 +7,21 @@ from flask import session
 from flask import flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
+import cloudinary
+import cloudinary.uploader
 
 
 app = Flask(__name__)
 
+
 NUMERO_WHATSAPP = "543794256156"
 app.permanent_session_lifetime = timedelta(hours=2)
+
+cloudinary.config(
+    cloud_name = os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key = os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret = os.environ.get("CLOUDINARY_API_SECRET")
+)
 
 database_url = os.environ.get("DATABASE_URL")
 
@@ -23,8 +32,8 @@ else:
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-UPLOAD_FOLDER = "static/productos"
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+#UPLOAD_FOLDER = "static/productos"
+#app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 app.secret_key = os.environ.get("SECRET_KEY", "clave_temporal_dev")
 
@@ -39,7 +48,7 @@ class Producto(db.Model):
     nombre = db.Column(db.String(100), nullable=False)
     descripcion = db.Column(db.Text, nullable=False)
     precio = db.Column(db.Float, nullable=False)
-    imagen = db.Column(db.String(200), nullable=False)
+    imagen = db.Column(db.String(500), nullable=False)
 
 
 class User(db.Model):
@@ -116,13 +125,21 @@ def admin():
         descripcion = request.form["descripcion"]
         precio = float(request.form["precio"])
 
-        imagen_file = request.files["imagen"]
-        nombre_imagen = secure_filename(imagen_file.filename)
-        ruta_imagen = os.path.join(app.config["UPLOAD_FOLDER"], nombre_imagen)
-        imagen_file.save(ruta_imagen)
+        imagen_file = request.files.get("imagen")
+
+        if not imagen_file:
+            flash("Debes subir una imagen", "danger")
+            return redirect(url_for("admin"))
+
+        upload_result = cloudinary.uploader.upload(imagen_file)
+
+        imagen_url = upload_result["secure_url"]
 
         nuevo_producto = Producto(
-            nombre=nombre, descripcion=descripcion, precio=precio, imagen=nombre_imagen
+            nombre=nombre,
+            descripcion=descripcion,
+            precio=precio,
+            imagen=imagen_url
         )
 
         db.session.add(nuevo_producto)
@@ -185,13 +202,6 @@ def eliminar_producto(id):
 
     producto = Producto.query.get_or_404(id)
 
-    # 1️⃣ Borrar imagen del servidor
-    if producto.imagen:
-        ruta_imagen = os.path.join("static/productos", producto.imagen)
-
-        if os.path.exists(ruta_imagen):
-            os.remove(ruta_imagen)
-
     # 2️⃣ Borrar producto de la base
     db.session.delete(producto)
     db.session.commit()
@@ -218,18 +228,9 @@ def editar_producto(id):
         imagen_file = request.files.get("imagen")
 
         if imagen_file and imagen_file.filename != "":
-            # eliminar imagen vieja
-            ruta_vieja = os.path.join(app.config["UPLOAD_FOLDER"], producto.imagen)
-            if os.path.exists(ruta_vieja):
-                os.remove(ruta_vieja)
+            upload_result = cloudinary.uploader.upload(imagen_file)
 
-            # guardar nueva imagen
-            nombre_imagen = secure_filename(imagen_file.filename)
-            ruta_nueva = os.path.join(app.config["UPLOAD_FOLDER"], nombre_imagen)
-            imagen_file.save(ruta_nueva)
-
-            producto.imagen = nombre_imagen
-
+            producto.imagen = upload_result["secure_url"]
         db.session.commit()
         flash("Producto actualizado correctamente", "info")
 
