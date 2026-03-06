@@ -144,6 +144,7 @@ def admin():
 
         db.session.add(nuevo_producto)
         db.session.commit()
+        print("PRODUCTO GUARDADO:", nuevo_producto.id, nuevo_producto.nombre)
         flash("Producto cargado correctamente", "success")
 
         return redirect(url_for("admin"))
