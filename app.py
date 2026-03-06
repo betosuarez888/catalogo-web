@@ -40,7 +40,8 @@ app.secret_key = os.environ.get("SECRET_KEY", "clave_temporal_dev")
 ADMIN_PASSWORD_HASH = "scrypt:32768:8:1$rsRqfE2GkJUoSdqj$6c42a633c7a298cb11e67351086801c55b3d33a4648c673528640f09bb5fe543ba785db9be2b6dd56ab10c164a5ce44276aebf1e15dcf5316c32ed5bd9f86c86"
 
 db = SQLAlchemy(app)
-
+print("DATABASE QUE USA LA APP:")
+print(app.config["SQLALCHEMY_DATABASE_URI"])
 
 # DEFINIR MODELOS PRIMERO
 class Producto(db.Model):
