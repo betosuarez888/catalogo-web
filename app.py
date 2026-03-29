@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
 import cloudinary
 import cloudinary.uploader
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -17,11 +18,13 @@ app = Flask(__name__)
 NUMERO_WHATSAPP = "543794256156"
 app.permanent_session_lifetime = timedelta(hours=2)
 
-cloudinary.config(
-    cloud_name = os.environ.get("CLOUDINARY_CLOUD_NAME"),
-    api_key = os.environ.get("CLOUDINARY_API_KEY"),
-    api_secret = os.environ.get("CLOUDINARY_API_SECRET")
-)
+if os.environ.get("DATABASE_URL"):  # estás en Render
+
+    cloudinary.config(
+        cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.environ.get("CLOUDINARY_API_KEY"),
+        api_secret=os.environ.get("CLOUDINARY_API_SECRET")
+    )
 
 database_url = os.environ.get("DATABASE_URL")
 
@@ -32,8 +35,6 @@ else:
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-#UPLOAD_FOLDER = "static/productos"
-#app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 app.secret_key = os.environ.get("SECRET_KEY", "clave_temporal_dev")
 
@@ -43,6 +44,16 @@ db = SQLAlchemy(app)
 print("DATABASE QUE USA LA APP:")
 print(app.config["SQLALCHEMY_DATABASE_URI"])
 
+#funcion helper para manejar iagenes de cloudinary al editar/eliminar
+def obtener_public_id(url):
+    try:
+        partes = url.split("/")
+        nombre_archivo = partes[-1]
+        public_id = nombre_archivo.split(".")[0]
+        return public_id
+    except:
+        return None
+
 # DEFINIR MODELOS PRIMERO
 class Producto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -50,6 +61,8 @@ class Producto(db.Model):
     descripcion = db.Column(db.Text, nullable=False)
     precio = db.Column(db.Float, nullable=False)
     imagen = db.Column(db.String(500), nullable=False)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    activo = db.Column(db.Boolean,default=True )
 
 
 class User(db.Model):
@@ -96,7 +109,24 @@ with app.app_context():
 
 @app.route("/")
 def index():
-    productos = Producto.query.all()
+    busqueda = request.args.get("q")
+
+    if busqueda:
+        busqueda = busqueda.strip()
+        productos = Producto.query.filter(
+            Producto.activo == True,
+            Producto.nombre.ilike(f"%{busqueda}%")
+        ).order_by(
+            Producto.fecha_creacion.desc()
+        ).all()
+    else:
+        productos = Producto.query.filter_by(
+            activo=True
+        ).order_by(
+            Producto.fecha_creacion.desc()
+        ).all()
+
+    cantidad_resultados = len(productos)
 
     visita = Visita.query.first()
 
@@ -112,6 +142,8 @@ def index():
         productos=productos,
         numero_whatsapp=NUMERO_WHATSAPP,
         visitas=total_visitas,
+        busqueda=busqueda,
+        cantidad_resultados=cantidad_resultados,
     )
 
 
@@ -132,9 +164,19 @@ def admin():
             flash("Debes subir una imagen", "danger")
             return redirect(url_for("admin"))
 
-        upload_result = cloudinary.uploader.upload(imagen_file)
+        if os.environ.get("DATABASE_URL"):
+        # 🌐 PRODUCCIÓN (Render + Cloudinary)
+            upload_result = cloudinary.uploader.upload(imagen_file)
+            imagen_url = upload_result["secure_url"]
 
-        imagen_url = upload_result["secure_url"]
+        else:
+            # 🖥️ LOCAL (guardar en carpeta)
+            nombre_imagen = secure_filename(imagen_file.filename)
+            ruta_imagen = os.path.join("static/productos", nombre_imagen)
+
+            imagen_file.save(ruta_imagen)
+
+            imagen_url = nombre_imagen
 
         nuevo_producto = Producto(
             nombre=nombre,
@@ -203,6 +245,14 @@ def eliminar_producto(id):
         return redirect(url_for("login"))
 
     producto = Producto.query.get_or_404(id)
+    
+    # borrar imagen si está en Cloudinary
+    if "cloudinary" in producto.imagen:
+
+        public_id = obtener_public_id(producto.imagen)
+
+        if public_id:
+            cloudinary.uploader.destroy(public_id)
 
     # 2️⃣ Borrar producto de la base
     db.session.delete(producto)
@@ -230,9 +280,29 @@ def editar_producto(id):
         imagen_file = request.files.get("imagen")
 
         if imagen_file and imagen_file.filename != "":
-            upload_result = cloudinary.uploader.upload(imagen_file)
+            
+             # 🌐 SOLO si es Cloudinary: elimina la imagen anterior de cloudinary
+            if "cloudinary" in producto.imagen:
 
-            producto.imagen = upload_result["secure_url"]
+                public_id = obtener_public_id(producto.imagen)
+
+                if public_id:
+                    cloudinary.uploader.destroy(public_id)
+            
+            # 🌐 PRODUCCIÓN
+            if os.environ.get("DATABASE_URL"):
+                upload_result = cloudinary.uploader.upload(imagen_file)
+                producto.imagen = upload_result["secure_url"]
+
+            # 🖥️ LOCAL
+            else:
+                nombre_imagen = secure_filename(imagen_file.filename)
+                ruta_imagen = os.path.join("static/productos", nombre_imagen)
+
+                imagen_file.save(ruta_imagen)
+
+                producto.imagen = nombre_imagen
+           
         db.session.commit()
         flash("Producto actualizado correctamente", "info")
 

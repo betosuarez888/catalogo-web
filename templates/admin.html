@@ -107,18 +107,30 @@
                 {% for producto in productos %}
                 <tr>
                     <td>
+
+                        {% if "http" in producto.imagen %}
                         <img src="{{ producto.imagen }}" width="60">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='productos/' + producto.imagen) }}" width="60">
+                        {% endif %}
                     </td>
                     <td>{{ producto.nombre }}</td>
                     <td>${{ producto.precio }}</td>
                     <td>
-                        <a href="{{ url_for('editar_producto', id=producto.id) }}"
-                            class="btn btn-sm btn-warning">Editar</a>
+                        <div class="d-flex flex-column flex-md-row gap-1">
 
-                        <a href="{{ url_for('eliminar_producto', id=producto.id) }}" class="btn btn-sm btn-danger"
-                            onclick="return confirm('¿Seguro que querés eliminar este producto?')">
-                            Eliminar
-                        </a>
+                            <a href="{{ url_for('editar_producto', id=producto.id) }}"
+                                class="btn btn-warning btn-sm w-100 w-md-auto py-1 px-2">
+                                Editar
+                            </a>
+
+                            <a href="{{ url_for('eliminar_producto', id=producto.id) }}"
+                                class="btn btn-danger btn-sm w-100 w-md-auto py-1 px-2"
+                                onclick="return confirm('¿Seguro que querés eliminar este producto?')">
+                                Eliminar
+                            </a>
+
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

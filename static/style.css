@@ -4,6 +4,14 @@ body {
     color: rgb(47, 11, 229);
 }
 
+.hero {
+    height: 80vh;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                url("/static/img/hero-tech.png");
+    background-size: cover;
+    background-position: center;
+}
+
 .card-body {
     background-color: #ebeff7;  /* gris oscuro sobrio */
     padding: 15px;
@@ -100,31 +108,28 @@ background-color: #ffffff;
     transform: scale(1.1);
 }
 
-.telefono-contacto {
-    text-align: center;
-    margin: 20px 0;
-}
-
 .telefono-contacto a {
-    display: inline-flex;          /* clave */
-    align-items: center;           /* centra verticalmente */
-    justify-content: center;
-    gap: 8px;                      /* espacio entre emoji y número */
-
-    background-color: #ff7a00;
-    color: white;
-    font-size: 22px;
-    font-weight: 800;
-    padding: 12px 30px;
-    border-radius: 8px;
-    text-decoration: none;
-    letter-spacing: 1px;
-    transition: 0.3s ease;
+  background: #2607a4;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  transition: 0.3s;
 }
 
 .telefono-contacto a:hover {
-    background-color: #fdaa66;
-    transform: scale(1.05);
+  background: #23b4d1;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .telefono-contacto {
+    top: 10px;
+    right: 15px;
+    font-size: 14px;
+  }
 }
 
 .admin-topbar {
