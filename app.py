@@ -130,12 +130,16 @@ def index():
 
     visita = Visita.query.first()
 
-    if visita:
+    if not visita:
+        visita = Visita(total=0)
+        db.session.add(visita)
+        db.session.commit()
+
+    if not session.get("user_id"):
         visita.total += 1
         db.session.commit()
-        total_visitas = visita.total
-    else:
-        total_visitas = 0
+
+    total_visitas = visita.total
 
     return render_template(
         "index.html",
@@ -343,6 +347,21 @@ def cambiar_password():
         return redirect(url_for("admin"))
 
     return render_template("cambiar_password.html")
+
+#cambiar estado de los productos
+@app.route("/producto/<int:id>/toggle", methods=["POST"])
+def toggle_producto(id):
+    
+    
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+    
+    producto = Producto.query.get_or_404(id)
+
+    producto.activo = not producto.activo
+    db.session.commit()
+
+    return "", 204
 
 
 @app.template_filter("pesos")

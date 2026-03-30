@@ -16,7 +16,17 @@
 
 </head>
 
+
 <body class="bg-light">
+
+  {% if session.get("user_id") %}
+<a href="{{ url_for('admin') }}" 
+   class="btn btn-dark btn-sm position-fixed"
+   style="top:20px; right:20px; z-index:999;">
+   ⚙️ Admin
+</a>
+{% endif %}
+
 
   <section class="hero d-flex align-items-center text-white position-relative">
      <!-- Teléfono flotante -->
